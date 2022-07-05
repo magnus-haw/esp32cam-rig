@@ -1,0 +1,67 @@
+esphome:
+  name: nasa01
+
+esp32:
+  board: esp32cam
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: "MyPassword"
+  encryption:
+    key: "eL3AolCl0HesC1toc6UEn+CG8ahntSW0q0sDUqOYIcs="
+
+ota:
+  password: "7fd0aedac557b247518be8448cf971c8"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Nasa01 Fallback Hotspot"
+    password: "CMD2MjAcQFKZ"
+
+captive_portal:
+  
+# Example configuration entry
+esp32_camera:
+  external_clock:
+    pin: GPIO0
+    frequency: 20MHz
+  i2c_pins:
+    sda: GPIO26
+    scl: GPIO27
+  data_pins: [GPIO5, GPIO18, GPIO19, GPIO21, GPIO36, GPIO39, GPIO34, GPIO35]
+  vsync_pin: GPIO25
+  href_pin: GPIO23
+  pixel_clock_pin: GPIO22
+  power_down_pin: GPIO32
+  resolution: 1600x1200
+
+  # Image settings
+  name: NASA1
+
+# Example configuration entry
+esp32_camera_web_server:
+  - port: 8080
+    mode: stream
+  - port: 8081
+    mode: snapshot
+    
+# LED flash configuration
+light:
+  - platform: binary
+    name: "Flash"
+    output: light_output
+    restore_mode: ALWAYS_OFF
+
+output:
+  - id: light_output
+    platform: gpio
+    pin: GPIO04
