@@ -28,44 +28,25 @@ def unknown(loader, suffix, node):
     return data
 yaml.add_multi_constructor('!secret', unknown)
 
-
-async def esp32_lighton(id, pswd=None, enc_key=None):
-
+async def get_esp_connection(id, pswd=None, enc_key=None):
     cli = aioesphomeapi.APIClient("nasa%02d.local"%id, 6053, password=pswd, noise_psk=enc_key)
-
     await cli.connect(login=True)
     entities = await cli.list_entities_services()
+    
+    return cli, entities
+
+async def disconnect(cli, entitites):
+    await cli.disconnect()
+
+async def esp32_lighton(cli, entities):
     light_on = await cli.light_command(key=entities[0][0].key, state=True)
-    d = await cli.disconnect()
 
-async def esp32_get_image(id, pswd=None, enc_key=None):
-
-    cli = aioesphomeapi.APIClient("nasa%02d.local"%id, 6053, password=pswd, noise_psk=enc_key)
-
-    await cli.connect(login=True)
-    def cb(state):
-        if type(state) == aioesphomeapi.CameraState:
-            try:
-                with open('out/x.jpg','wb') as out:
-                    out.write(state.image)
-                print("Image written")
-            except Exception as e:
-                print(e)
-
-    await cli.subscribe_states(cb)
-
-    l = await cli.list_entities_services()
-    print(l)
-
-
-async def esp32_lightoff(id, pswd=None, enc_key=None):
-
-    cli = aioesphomeapi.APIClient("nasa%02d.local"%id, 6053, password=pswd, noise_psk=enc_key)
-
-    await cli.connect(login=True)
-    entities = await cli.list_entities_services()
+async def esp32_lightoff(cli, entities):
     light_off = await cli.light_command(key=entities[0][0].key, state=False)
-    d = await cli.disconnect()
+
+async def esp32_get_image(cli, entities):
+    image = await cli.request_single_image()
+    return image
 
 def parse_config_files():
     outdict = {}
@@ -83,15 +64,30 @@ def parse_config_files():
 
 async def download_imgs(outdict=None):
     if type(outdict) is dict:
-        for key, value in outdict.items():
-            i = int(key)
-            await esp32_lighton(i, pswd= value['api']['password'], enc_key= value['api']['encryption']['key'])
-        for key, value in outdict.items():
-            i = int(key)
-            await esp32_get_image(i, pswd= value['api']['password'], enc_key= value['api']['encryption']['key'])
-        for key, value in outdict.items():
-            i = int(key)
-            await esp32_lightoff(i, pswd= value['api']['password'], enc_key= value['api']['encryption']['key'])
+        connections = [asyncio.create_task(get_esp_connection(int(key), pswd= value['api']['password'], 
+                                                              enc_key= value['api']['encryption']['key'])) for key, value in outdict.items()]
+        conns = await asyncio.gather(*connections)
+        lighton = await asyncio.gather(*(esp32_lighton(cli, ents) for cli,ents in conns))
+        imgs = await asyncio.gather(*(esp32_get_image(cli, ents) for cli,ents in conns))
+        lightoff = await asyncio.gather(*(esp32_lightoff(cli, ents) for cli,ents in conns))
+        disconn = await asyncio.gather(*(disconnect(cli, ents) for cli,ents in conns))
 
-outdict = parse_config_files()
-asyncio.run(download_imgs(outdict=outdict))
+        return imgs
+
+async def wait(a,b):
+    print('waiting... ')
+    await asyncio.sleep(2)
+    print('done.')
+    return a+b,b
+
+async def loop():
+    for i in range(0,5):
+        await wait()
+
+async def parallel_loop():
+    res = await asyncio.gather(*(wait(n*1, n*2) for n in [0,1,2,3,4]))
+    return res
+#outdict = parse_config_files()
+#asyncio.run(download_imgs(outdict=outdict))
+ret = asyncio.run(parallel_loop())
+print(type(ret),ret)
