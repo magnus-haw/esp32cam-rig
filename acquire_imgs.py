@@ -82,7 +82,7 @@ async def wait(a,b):
 
 async def loop():
     for i in range(0,5):
-        await wait()
+        await wait(1,2)
 
 async def parallel_loop():
     res = await asyncio.gather(*(wait(n*1, n*2) for n in [0,1,2,3,4]))
