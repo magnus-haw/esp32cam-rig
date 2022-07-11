@@ -1,5 +1,6 @@
+
 esphome:
-  name: "nasa00"
+  name: nasa07
 
 esp32:
   board: esp32cam
@@ -13,28 +14,23 @@ logger:
 api:
   password: 'MyPassword'
   encryption:
-    key: "xIAK2/wrGPQJHQinpI/rx7NW+5ZDJu6f8LQDX4qV0KM="
+    key: "KTmt2BIzmJ8cpD49nwn8Tg2zmpukMYuJD3UVUpWIAxM="
 
 ota:
-  password: "0e6fa19a9f5b70b9e2dd9630eadf82a7"
+  password: "b39830f1130be2fc089e473c8093d8fd"
 
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
-
+  
   # Optional manual IP
   manual_ip:
-    static_ip: 10.42.0.242
+    static_ip: 10.42.0.27
     gateway: 10.42.0.1
     subnet: 255.255.255.0
 
-  # Enable fallback hotspot (captive portal) in case wifi connection fails
-  ap:
-    ssid: "Nasa0 Fallback Hotspot"
-    password: "CJKHtyiGuGS6"
-
 captive_portal:
-    
+
 # Example configuration entry
 esp32_camera:
   external_clock:
@@ -51,16 +47,16 @@ esp32_camera:
   resolution: 1600x1200
 
   # Image settings
-  name: NASA0
+  name: NASA07
 
-# Example configuration entry for camera webserver
+# Example configuration entry
 esp32_camera_web_server:
   - port: 8080
     mode: stream
   - port: 8081
     mode: snapshot
     
-# Example configuration entry
+# LED flash configuration
 light:
   - platform: binary
     name: "Flash"
@@ -71,3 +67,4 @@ output:
   - id: light_output
     platform: gpio
     pin: GPIO04
+
