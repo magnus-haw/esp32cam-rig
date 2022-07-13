@@ -14,7 +14,7 @@ logger:
 api:
   password: 'MyPassword'
   encryption:
-    key: "UqDLQFkVdj2nIy3NCKrwkW9bx2J2TMGFIgHihBmbThU"
+    key: "UqDLQFkVdj2nIy3NCKrwkW9bx2J2TMGFIgHihBmbThU="
 
 ota:
   password: "5f1788e41a9325c76e51dc5c36c8cdc9"

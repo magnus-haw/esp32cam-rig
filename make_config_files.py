@@ -18,7 +18,7 @@ logger:
 
 # Enable Home Assistant API
 api:
-  password: 'MyPassword'
+  password: '%s'
   encryption:
     key: "%s"
 
@@ -74,7 +74,7 @@ output:
     platform: gpio
     pin: GPIO04
 
-"""%(id,enc,pswd,ip,id)
+"""%(id,pswd, enc,pswd,ip,id)
 
     return config
 

@@ -1,6 +1,6 @@
 
 esphome:
-  name: nasa18
+  name: nasa17
 
 esp32:
   board: esp32cam
@@ -14,10 +14,10 @@ logger:
 api:
   password: 'MyPassword'
   encryption:
-    key: "0FmJ99NfcE6bRndkvUDy3t4TXVHsYb64uP66jCUOq54"
+    key: "M0LAkiVAL5WlqANVE0dv2p9nY+BPF4Tp+fF6na3DXzo="
 
 ota:
-  password: "0901ef1e6cd002ccc479065ee04ac868"
+  password: "ca17044f3f8a6af030c9193df190ff09"
 
 wifi:
   ssid: !secret wifi_ssid
@@ -25,7 +25,7 @@ wifi:
   
   # Optional manual IP
   manual_ip:
-    static_ip: 10.42.0.38
+    static_ip: 10.42.0.37
     gateway: 10.42.0.1
     subnet: 255.255.255.0
 
@@ -47,7 +47,7 @@ esp32_camera:
   resolution: 1600x1200
 
   # Image settings
-  name: NASA18
+  name: NASA17
 
 # Example configuration entry
 esp32_camera_web_server:

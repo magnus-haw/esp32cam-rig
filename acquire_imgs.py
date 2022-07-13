@@ -89,7 +89,8 @@ async def download_imgs(outdict=None):
                                                               enc_key= value['api']['encryption']['key'], ip=value['wifi']['manual_ip']['static_ip'])) for key, value in outdict.items()]
         conns = await asyncio.gather(*connections)
         lighton = await asyncio.gather(*(esp32_lighton(cli, ents) for cli,ents,ip in conns))
-        await asyncio.sleep(1)
+        await asyncio.sleep(4)
+        await esp32_get_images(conns)
         await esp32_get_images(conns)
         
         lightoff = await asyncio.gather(*(esp32_lightoff(cli, ents) for cli,ents,ip in conns))
