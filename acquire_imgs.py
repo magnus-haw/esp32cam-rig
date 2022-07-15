@@ -1,20 +1,15 @@
 #!/usr/bin/env python3
 
 # API libraries
-import aiodns
 import aiohttp
 import asyncio
 import aiofiles
 import aioesphomeapi
-import socket
 
 # fileio imports
 from pathlib import Path
 from glob import glob
 import yaml
-
-# image processing imports
-import numpy as np
 
 
 CONFIGPATH = Path('/home/magnus/esp32cam-rig/config')
@@ -37,10 +32,20 @@ async def get_esp_connection(id, pswd=None, enc_key=None, ip=None):
     try:
         await cli.connect(login=True)
         entities = await cli.list_entities_services()
+
+        ip = []
+        def callback(state, ip=ip):
+            if type(state) is aioesphomeapi.TextSensorState:
+                ip.append(state.state)
+                print(state)
+                
+        await cli.subscribe_states(callback)
+        await asyncio.sleep(.5)
+        url = "%s"%(ip[0])
     except:
-        cli = None; entities=None
-    
-    return cli, entities, ip
+        cli = None; entities=None; url=''
+
+    return cli, entities, url
 
 async def disconnect(cli, entitites):
     if cli is not None:
@@ -69,7 +74,7 @@ async def esp32_get_images(conns):
     
 def parse_config_files():
     outdict = {}
-    paths = glob(str(CONFIGPATH / 'nasa*.yaml'))
+    paths = glob(str(CONFIGPATH / 'nasa15.yaml'))
     
     for path in paths:
         name = path.split('/')[-1].strip('.yaml')
@@ -89,14 +94,13 @@ async def download_imgs(outdict=None):
                                                               enc_key= value['api']['encryption']['key'], ip=value['wifi']['manual_ip']['static_ip'])) for key, value in outdict.items()]
         conns = await asyncio.gather(*connections)
         lighton = await asyncio.gather(*(esp32_lighton(cli, ents) for cli,ents,ip in conns))
-        await asyncio.sleep(4)
+        await asyncio.sleep(1)
+
         await esp32_get_images(conns)
         await esp32_get_images(conns)
         
         lightoff = await asyncio.gather(*(esp32_lightoff(cli, ents) for cli,ents,ip in conns))
         disconn = await asyncio.gather(*(disconnect(cli, ents) for cli,ents,ip in conns))
-
-        #return imgs
 
 # async def wait(a,b):
 #     print('waiting... ')

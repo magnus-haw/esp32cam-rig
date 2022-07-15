@@ -23,10 +23,10 @@ wifi:
   password: !secret wifi_password
   
   # Optional manual IP
-  manual_ip:
-    static_ip: 10.42.0.243
-    gateway: 10.42.0.1
-    subnet: 255.255.255.0
+  #manual_ip:
+  #  static_ip: 192.168.10.109
+  #  gateway: 192.168.10.1
+  #  subnet: 255.255.255.0
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
@@ -71,3 +71,8 @@ output:
   - id: light_output
     platform: gpio
     pin: GPIO04
+    
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      name: ESPip

@@ -73,7 +73,11 @@ output:
   - id: light_output
     platform: gpio
     pin: GPIO04
-
+   
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      name: ESPip
 """%(id,pswd, enc,pswd,ip,id)
 
     return config
