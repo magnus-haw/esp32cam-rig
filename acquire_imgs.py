@@ -74,7 +74,7 @@ async def esp32_get_images(conns):
     
 def parse_config_files():
     outdict = {}
-    paths = glob(str(CONFIGPATH / 'nasa15.yaml'))
+    paths = glob(str(CONFIGPATH / 'nasa*.yaml'))
     
     for path in paths:
         name = path.split('/')[-1].strip('.yaml')
@@ -91,7 +91,7 @@ async def download_imgs(outdict=None):
     if type(outdict) is dict:
 
         connections = [asyncio.create_task(get_esp_connection(int(key), pswd= value['api']['password'], 
-                                                              enc_key= value['api']['encryption']['key'], ip=value['wifi']['manual_ip']['static_ip'])) for key, value in outdict.items()]
+                                                              enc_key= value['api']['encryption']['key'], ip=None)) for key, value in outdict.items()]
         conns = await asyncio.gather(*connections)
         lighton = await asyncio.gather(*(esp32_lighton(cli, ents) for cli,ents,ip in conns))
         await asyncio.sleep(1)
