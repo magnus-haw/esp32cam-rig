@@ -28,20 +28,21 @@ def unknown(loader, suffix, node):
 yaml.add_multi_constructor('!secret', unknown)
 
 async def get_esp_connection(id, pswd=None, enc_key=None, ip=None):
+    url = "nasa%02d.local"%id
     cli = aioesphomeapi.APIClient("nasa%02d.local"%id, 6053, password=pswd, noise_psk=enc_key)
     try:
         await cli.connect(login=True)
         entities = await cli.list_entities_services()
 
-        ip = []
-        def callback(state, ip=ip):
-            if type(state) is aioesphomeapi.TextSensorState:
-                ip.append(state.state)
-                print(state)
+        # ip = []
+        # def callback(state, ip=ip):
+        #     if type(state) is aioesphomeapi.TextSensorState:
+        #         ip.append(state.state)
+        #         print(state)
                 
-        await cli.subscribe_states(callback)
-        await asyncio.sleep(.5)
-        url = "%s"%(ip[0])
+        # await cli.subscribe_states(callback)
+        # await asyncio.sleep(.5)
+        # url = "%s"%(ip[0])
     except:
         cli = None; entities=None; url=''
 
@@ -59,17 +60,17 @@ async def esp32_lightoff(cli, entities):
     if cli is not None:
         light_off = await cli.light_command(key=entities[0][0].key, state=False)
 
-async def esp32_get_images(conns):
+async def fetch_img(id):
     async with aiohttp.ClientSession() as session:
-        async def fetch_img(cli,url):
-            if cli is not None:
-                async with session.get(url) as resp:
-                    if resp.status == 200:
-                        f = await aiofiles.open('%s.jpg'%cli.address.strip('.local'),mode='wb')
-                        await f.write(await resp.read())
-                        await f.close()
-            
-        await asyncio.gather(*(fetch_img(cli,"http://%s:8081"%str(ip)) for cli,ents,ip in conns))
+        url = "http://nasa%02d.local:8081"%id
+        async with session.get(url) as resp:
+            if resp.status == 200:
+                f = await aiofiles.open('nasa%02d.jpg'%(id),mode='wb')
+                await f.write(await resp.content.read())
+
+async def esp32_get_images(ids):
+    await asyncio.gather(*(fetch_img(id) for id in ids))
+    #await asyncio.gather(*(fetch_img(id) for id in ids))
 
     
 def parse_config_files():
@@ -90,17 +91,16 @@ def parse_config_files():
 async def download_imgs(outdict=None):
     if type(outdict) is dict:
 
-        connections = [asyncio.create_task(get_esp_connection(int(key), pswd= value['api']['password'], 
-                                                              enc_key= value['api']['encryption']['key'], ip=None)) for key, value in outdict.items()]
-        conns = await asyncio.gather(*connections)
-        lighton = await asyncio.gather(*(esp32_lighton(cli, ents) for cli,ents,ip in conns))
-        await asyncio.sleep(1)
-
-        await esp32_get_images(conns)
-        await esp32_get_images(conns)
-        
-        lightoff = await asyncio.gather(*(esp32_lightoff(cli, ents) for cli,ents,ip in conns))
-        disconn = await asyncio.gather(*(disconnect(cli, ents) for cli,ents,ip in conns))
+        # connections = [asyncio.create_task(get_esp_connection(int(key), pswd= value['api']['password'], 
+        #                                                       enc_key= value['api']['encryption']['key'], ip=None)) for key, value in outdict.items()]
+        # conns = await asyncio.gather(*connections)
+        # lighton = await asyncio.gather(*(esp32_lighton(cli, ents) for cli,ents,ip in conns))
+        # await asyncio.sleep(.2)
+        print('start')
+        await esp32_get_images(range(3,24))
+        print('end')
+        # lightoff = await asyncio.gather(*(esp32_lightoff(cli, ents) for cli,ents,ip in conns))
+        # disconn = await asyncio.gather(*(disconnect(cli, ents) for cli,ents,ip in conns))
 
 # async def wait(a,b):
 #     print('waiting... ')
@@ -117,7 +117,6 @@ async def download_imgs(outdict=None):
 #     return res
 
 outdict = parse_config_files()
-print(outdict)
 asyncio.run(download_imgs(outdict=outdict))
 
 
