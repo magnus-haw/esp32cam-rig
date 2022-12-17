@@ -182,9 +182,11 @@ async def esp32_lightoff(cli, entities):
     if cli is not None:
         light_off = await cli.light_command(key=entities[0][0].key, state=False)
 
-async def fetch_img(id, folder='',index=0, write=True):
+async def fetch_img(id, folder='',index=0, write=True, ip=None):
     async with aiohttp.ClientSession() as session:
         url = "http://nasa%02d.local:8081"%id
+        if ip is not None:
+            url = "http://%s:8081"%ip
         async with session.get(url) as resp:
             if resp.status == 200 and write:
                 f = await aiofiles.open(folder+'nasa%02d_%02d.jpg'%(id,index),mode='wb')
